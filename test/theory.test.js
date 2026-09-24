@@ -47,3 +47,17 @@ test('written notes sound at the right concert pitch', () => {
     }
   }
 });
+
+test('chords typed in written pitch convert back to concert', () => {
+  assert.strictEqual(T.toConcert('D7', 'tenor').text, 'C7');
+  assert.strictEqual(T.toConcert('Am7b5', 'alto').text, 'Cm7b5');
+  assert.strictEqual(T.toConcert('D/F#', 'tenor').text, 'C/E');
+  assert.strictEqual(T.toConcert('G7alt', 'soprano').text, 'F7alt');
+  assert.strictEqual(T.toConcert('Cmaj7', 'bari').text, 'Ebmaj7');
+  assert.strictEqual(T.toConcert('Cmaj7', 'concert').text, 'Cmaj7');
+  // Round trip: typed written chord shows up unchanged on the sax card.
+  for (const c of ['D7', 'F#m7', 'Bbmaj7#11', 'Ebm6', 'A/C#']) {
+    const concert = T.toConcert(c, 'tenor').text;
+    assert.strictEqual(T.arpeggio(T.parseChord(concert), 'tenor').written.text, c);
+  }
+});

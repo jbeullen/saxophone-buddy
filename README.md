@@ -2,7 +2,7 @@
 
 A mobile-first web page that turns chord symbols into saxophone arpeggios.
 
-- Type concert-pitch chords (`Cmaj`, `Cmin7b5`, `Cmaj7#11`, `C/E`, `F7alt`, `Bb13`, `C6/9`, …), one at a time or a whole progression separated by spaces.
+- Type chords (`Cmaj`, `Cmin7b5`, `Cmaj7#11`, `C/E`, `F7alt`, `Bb13`, `C6/9`, …), one at a time or a whole progression separated by spaces, either in concert pitch (as on a lead sheet) or as written on your sax part.
 - Pick your horn: alto (E♭), tenor (B♭), soprano (B♭), baritone (E♭) or concert pitch.
 - Each chord shows its written arpeggio on a treble staff. Every note head is a circle with its name inside (`A♭`, `F♯`), coloured by chord degree, with the degree (R, 3, ♭7, ♯11…) underneath.
 - Slash chords start on the bass note and stack the chord tones above it.

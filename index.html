@@ -173,6 +173,7 @@
     font-weight: 700;
   }
   .btn.ghost { background: transparent; border: 1.5px solid var(--line); color: var(--ink); height: 36px; padding: 0 12px; font-size: 14px; }
+  .entry-pitch { display: grid; gap: 6px; margin-bottom: 10px; }
   .hint { font-size: 13px; color: var(--muted); margin: 6px 2px 0; }
   .error { color: var(--danger); font-size: 14px; margin: 6px 2px 0; }
 
@@ -332,17 +333,21 @@
   </header>
 
   <section aria-label="Add chords">
+    <div class="entry-pitch">
+      <div class="label" id="pitch-label">I type chords in</div>
+      <div class="seg" id="input-pitch" role="group" aria-labelledby="pitch-label"></div>
+    </div>
     <form class="entry" id="entry" autocomplete="off">
       <input id="chord-input" type="text" inputmode="text" autocapitalize="off" autocorrect="off" spellcheck="false"
-             placeholder="Cmaj7  Dm7b5  G7#9  C/E" aria-label="Chord symbols, concert pitch">
+             placeholder="Cmaj7  Dm7b5  G7#9  C/E" aria-label="Chord symbols">
       <button class="btn" type="submit">Add</button>
     </form>
-    <p class="hint">Type concert-pitch chords, one or several separated by spaces. Try Cmaj, Cmin7b5, Cmaj7#11, C/E, F7alt.</p>
+    <p class="hint" id="entry-hint"></p>
     <p class="error" id="entry-error" hidden></p>
   </section>
 
   <section class="presets" aria-label="Example progressions">
-    <span class="label">Load</span>
+    <span class="label">Load (concert)</span>
     <button class="btn ghost" type="button" data-preset="Dm7 G7 Cmaj7 Cmaj7">ii–V–I</button>
     <button class="btn ghost" type="button" data-preset="Dm7b5 G7b9 Cm6 Cm6">Minor ii–V–i</button>
     <button class="btn ghost" type="button" data-preset="Cm7 F7 Bbmaj7 Ebmaj7 Am7b5 D7b9 Gm6 Gm6">Autumn Leaves A</button>

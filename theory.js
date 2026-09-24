@@ -377,11 +377,23 @@
     return { bass, upper };
   }
 
+  // Turn a chord typed in written pitch for `instrumentId` into its concert-pitch symbol.
+  function toConcert(text, instrumentId) {
+    const c = parseChord(text);
+    if (c.error) return c;
+    const inst = INSTRUMENTS[instrumentId] || INSTRUMENTS.concert;
+    const down = (n, minor) => friendlyRoot(transposeNote(n, -inst.steps, -inst.semis), minor);
+    const root = down(c.root, c.minor);
+    const bass = c.bass ? down(c.bass, false) : null;
+    return { text: noteName(root) + c.suffix + (bass ? '/' + noteName(bass) : '') };
+  }
+
   const api = {
     INSTRUMENTS,
     parseChord,
     splitProgression,
     arpeggio,
+    toConcert,
     pianoVoicing,
     noteName,
     LETTERS,

@@ -12,6 +12,7 @@
     bpm: 120,
     beats: 4,
     mode: 'both',
+    inputPitch: 'concert', // or 'written': chords typed as they appear on a sax part
     click: false,
     follow: true,
   };
@@ -70,8 +71,35 @@
       state.instrument = v;
       save();
       renderAll();
+      renderPitchControl();
     }
   );
+
+  // Concert (lead sheet) or written pitch for the instrument that's selected.
+  const pitchEl = $('#input-pitch');
+  function renderPitchControl() {
+    const inst = T.INSTRUMENTS[state.instrument];
+    const transposing = state.instrument !== 'concert';
+    pitchEl.parentElement.hidden = !transposing;
+    const written = transposing && state.inputPitch === 'written';
+    segmented(
+      pitchEl,
+      [
+        { value: 'concert', html: 'Concert<small>lead sheet</small>' },
+        { value: 'written', html: `${inst.name} ${inst.key}<small>my part</small>` },
+      ],
+      () => state.inputPitch,
+      (v) => {
+        state.inputPitch = v;
+        save();
+        renderPitchControl();
+      }
+    );
+    $('#entry-hint').textContent = written
+      ? `Type chords as written on your ${inst.name.toLowerCase()} part. They're converted to concert pitch for the piano.`
+      : 'Type concert-pitch chords from a lead sheet, one or several separated by spaces. Try Cmaj, Cmin7b5, Cmaj7#11, C/E, F7alt.';
+  }
+  renderPitchControl();
 
   segmented(
     $('#beats'),
@@ -287,7 +315,8 @@
       return;
     }
     errEl.hidden = true;
-    state.chords.push(...tokens);
+    const written = state.instrument !== 'concert' && state.inputPitch === 'written';
+    state.chords.push(...(written ? tokens.map((t) => T.toConcert(t, state.instrument).text) : tokens));
     input.value = '';
     save();
     renderAll();
