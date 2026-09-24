@@ -523,5 +523,14 @@
     }
   });
 
+  // ---------- Piano recordings ----------
+
+  const pianoStatus = $('#piano-status');
+  const STATUS_TEXT = { loading: '· loading piano…', failed: '· simple piano' };
+  const showStatus = (s) => (pianoStatus.textContent = STATUS_TEXT[s] || '');
+  A.onStatus(showStatus);
+  A.prefetch();
+  showStatus(A.status());
+
   renderAll();
 })();

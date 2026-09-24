@@ -314,6 +314,9 @@
   .step { width: 36px; height: 32px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface-2); font-size: 18px; line-height: 1; }
   input[type="range"] { width: 100%; accent-color: var(--brass); margin: 0; height: 24px; }
 
+  .credit { font-size: 12px; color: var(--muted); }
+  .credit a { color: inherit; }
+
   @media (prefers-reduced-motion: no-preference) {
     .chip, .card, .seg button { transition: background-color .15s, border-color .15s, color .15s; }
   }
@@ -383,6 +386,8 @@
   </div>
 
   <section class="cards" id="cards" aria-label="Arpeggios"></section>
+
+  <footer class="credit">Piano recordings: <a href="https://github.com/Tonejs/audio" target="_blank" rel="noopener">Salamander Grand Piano</a> by Alexander Holm, <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener">CC BY 3.0</a>.</footer>
 </main>
 
 <div class="transport" role="region" aria-label="Transport">
@@ -390,7 +395,7 @@
     <button class="play" id="play" type="button" aria-label="Play"></button>
     <div class="tempo">
       <div class="tempo-top">
-        <span class="bpm" id="bpm-value">120</span><span class="bpm-unit">BPM</span>
+        <span class="bpm" id="bpm-value">120</span><span class="bpm-unit">BPM <span id="piano-status"></span></span>
         <button class="step" type="button" id="slower" aria-label="Slower">−</button>
         <button class="step" type="button" id="faster" aria-label="Faster">+</button>
       </div>

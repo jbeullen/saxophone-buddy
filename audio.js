@@ -1,12 +1,86 @@
 /*
- * Small Web Audio piano: additive partials with a hammer thump, a decaying
- * low-pass envelope and a generated room reverb. No samples to download.
+ * Piano playback. Uses recordings of the Salamander Grand Piano (samples/piano),
+ * one every three semitones, re-pitched to the notes in between. Until they
+ * have loaded, or if they fail to, a small additive synth plays instead.
  */
 (function (root) {
   'use strict';
 
   let ctx = null;
   let input = null;
+
+  // ---------- Recorded piano ----------
+
+  const SAMPLE_DIR = 'samples/piano/';
+  const SAMPLE_NAMES = ['A1'];
+  for (let o = 2; o <= 6; o++) SAMPLE_NAMES.push(`C${o}`, `Ds${o}`, `Fs${o}`, `A${o}`);
+  SAMPLE_NAMES.push('C7');
+  const NAME_PC = { C: 0, Ds: 3, Fs: 6, A: 9 };
+  const nameToMidi = (n) => {
+    const m = /^([A-Z][s]?)(\d)$/.exec(n);
+    return (Number(m[2]) + 1) * 12 + NAME_PC[m[1]];
+  };
+
+  const samples = new Map(); // midi -> AudioBuffer
+  let sampleStatus = 'idle'; // idle | loading | ready | failed
+  let downloads = null;
+  const listeners = new Set();
+  const setStatus = (s) => {
+    sampleStatus = s;
+    listeners.forEach((fn) => fn(s));
+  };
+
+  // Download the files straight away; decoding needs an AudioContext, so it waits for ensure().
+  function prefetch() {
+    if (downloads) return;
+    setStatus('loading');
+    downloads = SAMPLE_NAMES.map((name) =>
+      fetch(SAMPLE_DIR + name + '.mp3')
+        .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(r.status))))
+        .then((data) => ({ name, data }))
+    );
+  }
+
+  let decoding = false;
+  function decodeAll() {
+    if (decoding) return;
+    decoding = true;
+    prefetch();
+    Promise.all(
+      downloads.map((p) =>
+        p.then(
+          ({ name, data }) =>
+            new Promise((resolve, reject) => ctx.decodeAudioData(data, resolve, reject)).then((buf) =>
+              samples.set(nameToMidi(name), buf)
+            ),
+          () => null
+        )
+      )
+    ).then(() => setStatus(samples.size >= SAMPLE_NAMES.length - 2 ? 'ready' : 'failed'));
+  }
+
+  function nearestSample(midi) {
+    let best = null;
+    for (const m of samples.keys()) if (best === null || Math.abs(m - midi) < Math.abs(best - midi)) best = m;
+    return best;
+  }
+
+  function sampledNote(midi, time, duration, velocity) {
+    const base = nearestSample(midi);
+    const src = ctx.createBufferSource();
+    src.buffer = samples.get(base);
+    src.playbackRate.value = Math.pow(2, (midi - base) / 12);
+    const g = ctx.createGain();
+    const level = 0.9 * velocity; // the recordings peak around 0.2-0.4
+    const end = time + duration;
+    g.gain.setValueAtTime(level, time);
+    g.gain.setValueAtTime(level, end);
+    g.gain.setTargetAtTime(0, end, 0.12); // damper
+    src.connect(g);
+    g.connect(input);
+    src.start(time);
+    src.stop(Math.min(end + 1, time + src.buffer.duration / src.playbackRate.value));
+  }
 
   function makeImpulse(seconds) {
     const rate = ctx.sampleRate;
@@ -40,18 +114,24 @@
       const verb = ctx.createConvolver();
       verb.buffer = makeImpulse(2.2);
       const wet = ctx.createGain();
-      wet.gain.value = 0.22;
+      wet.gain.value = 0.16;
       input.connect(verb);
       verb.connect(wet);
       wet.connect(comp);
     }
     if (ctx.state !== 'running') ctx.resume();
+    decodeAll();
     return ctx;
   }
 
   const PARTIALS = [1, 0.42, 0.26, 0.14, 0.09, 0.05, 0.03];
 
   function note(midi, time, duration, velocity = 0.7) {
+    if (sampleStatus === 'ready') return sampledNote(midi, time, duration, velocity);
+    synthNote(midi, time, duration, velocity);
+  }
+
+  function synthNote(midi, time, duration, velocity) {
     const f0 = 440 * Math.pow(2, (midi - 69) / 12);
     const decay = Math.max(0.5, 3.2 - (midi - 36) * 0.045); // lower notes ring longer
     const end = time + duration;
@@ -125,7 +205,10 @@
 
   root.SaxAudio = {
     ensure,
+    prefetch,
     note,
+    status: () => sampleStatus,
+    onStatus: (fn) => listeners.add(fn),
     click,
     now: () => (ctx ? ctx.currentTime : 0),
   };
