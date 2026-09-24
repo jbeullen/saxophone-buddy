@@ -36,3 +36,14 @@ test('rejects nonsense', () => {
   assert.ok(T.parseChord('H7').error);
   assert.ok(T.parseChord('Cxyz').error);
 });
+
+test('written notes sound at the right concert pitch', () => {
+  // Written C major arpeggio on each horn; sounding pitch must be the concert chord.
+  const sounds = { alto: 9, tenor: 14, soprano: 2, bari: 21 };
+  for (const [inst, drop] of Object.entries(sounds)) {
+    for (const n of T.arpeggio(T.parseChord('F7'), inst).notes) {
+      assert.strictEqual(n.midi - n.concertMidi, drop);
+      assert.ok([5, 9, 0, 3].includes(n.concertMidi % 12), `${inst} ${n.name}`);
+    }
+  }
+});
