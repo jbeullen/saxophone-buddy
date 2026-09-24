@@ -61,3 +61,16 @@ test('chords typed in written pitch convert back to concert', () => {
     assert.strictEqual(T.arpeggio(T.parseChord(concert), 'tenor').written.text, c);
   }
 });
+
+test('slash chords put the bass alone at the bottom of the piano voicing', () => {
+  const pcs = (c) => {
+    const v = T.pianoVoicing(T.parseChord(c));
+    return { bass: v.bass.map((m) => m % 12), upper: v.upper.map((m) => m % 12), top: Math.max(...v.bass), low: Math.min(...v.upper) };
+  };
+  const e = pcs('C/E');
+  const g = pcs('C/G');
+  assert.deepStrictEqual(e.bass, [4, 4]);
+  assert.deepStrictEqual(g.bass, [7, 7]);
+  assert.ok(!e.upper.includes(4) && !g.upper.includes(7));
+  assert.ok(e.low > e.top && g.low > g.top);
+});

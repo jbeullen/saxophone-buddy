@@ -360,21 +360,26 @@
   }
 
   // Concert-pitch voicing for the piano accompaniment.
+  // The bass is doubled an octave up (phone speakers barely play the low octave), and
+  // the right hand leaves out the bass note so a slash chord's bass stands on its own.
   function pianoVoicing(chord) {
     const rootPc = pitchClass(chord.root);
     const bassPc = chord.bass ? pitchClass(chord.bass) : rootPc;
-    const bass = 36 + mod(bassPc - 4, 12) + 4; // E2..D#3
-    const upper = [];
+    const bass = 40 + mod(bassPc - 4, 12); // E2..D#3
+    const bassHigh = bass + 12;
+    const low = Math.max(55, bassHigh + 3); // right hand starts clear of the bass
+    const omitBass = Boolean(chord.bass) || chord.tones.length > 3;
     const skipFifth = chord.tones.length > 5;
+    const upper = [];
     for (const t of chord.tones) {
-      if (t.deg === 1 && chord.tones.length > 3) continue;
+      const pc = mod(rootPc + t.semis, 12);
+      if (omitBass && pc === bassPc) continue;
       if (t.deg === 5 && t.semis === 7 && skipFifth) continue;
-      let m = 48 + mod(rootPc + t.semis - 48, 12);
-      while (m < 53) m += 12; // keep the right hand between F3 and E5
-      upper.push(m);
+      let m = low + mod(pc - low, 12);
+      if (!upper.includes(m)) upper.push(m);
     }
     upper.sort((a, b) => a - b);
-    return { bass, upper };
+    return { bass: [bass, bassHigh], upper };
   }
 
   // Turn a chord typed in written pitch for `instrumentId` into its concert-pitch symbol.

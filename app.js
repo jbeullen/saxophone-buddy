@@ -436,8 +436,15 @@
           const v = T.pianoVoicing(p.chord);
           const len = slots * eighth * 0.97;
           const vel = state.mode === 'both' ? 0.5 : 0.7;
-          A.note(v.bass, time, len, vel + 0.1);
+          A.note(v.bass[0], time, len, 0.85);
+          A.note(v.bass[1], time, len, 0.6);
           v.upper.forEach((m) => A.note(m, time + 0.012, len, vel));
+        } else if (this.slot % 4 === 0 && state.mode !== 'arp') {
+          // Re-strike the bass every two beats so it keeps sounding under long chords.
+          const v = T.pianoVoicing(p.chord);
+          const len = Math.min(4, slots - this.slot) * eighth * 0.97;
+          A.note(v.bass[0], time, len, 0.7);
+          A.note(v.bass[1], time, len, 0.45);
         }
         let noteIdx = -1;
         if (state.mode !== 'chords') {
