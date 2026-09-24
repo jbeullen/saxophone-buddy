@@ -1,0 +1,9 @@
+{
+  "name": "saxophone-buddy",
+  "private": true,
+  "description": "Chord progressions to saxophone arpeggios, with piano playback.",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "start": "python3 -m http.server 8000"
+  }
+}

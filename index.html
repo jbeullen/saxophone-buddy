@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- /skeleton -->
+<title>Saxophone Buddy</title>
+<meta name="description" content="Type chord symbols, loop them on piano, and read each arpeggio transposed for alto, tenor, soprano or baritone sax.">
+<meta name="theme-color" content="#EEF1F4">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Noto+Music&display=swap">
+<style>
+  :root {
+    --bg: #EEF1F4;
+    --surface: #FFFFFF;
+    --surface-2: #F6F8FA;
+    --ink: #15202B;
+    --muted: #5B6875;
+    --line: #C9D1D9;
+    --staff: #7C8894;
+    --brass: #9A6814;
+    --brass-ink: #FFFFFF;
+    --brass-soft: #F4E7CC;
+    --danger: #B3261E;
+    --c-root: #C2412D;
+    --c-third: #2563A8;
+    --c-fifth: #2E7D4F;
+    --c-seventh: #7A48B0;
+    --c-ext: #9A6814;
+    --c-bass: #5B6875;
+    --shadow: 0 1px 2px rgba(21, 32, 43, .06), 0 4px 14px rgba(21, 32, 43, .06);
+    --display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+    --body: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --music: "Noto Music", "Bravura", "Apple Symbols", "Segoe UI Symbol", serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #0E1419;
+      --surface: #172029;
+      --surface-2: #1D2833;
+      --ink: #E4EAF0;
+      --muted: #93A1AE;
+      --line: #33414E;
+      --staff: #6F7E8C;
+      --brass: #E0A94A;
+      --brass-ink: #1A1206;
+      --brass-soft: #3A2E17;
+      --danger: #F2837A;
+      --c-root: #F07A64;
+      --c-third: #6FA8E8;
+      --c-fifth: #62C08A;
+      --c-seventh: #B48AE6;
+      --c-ext: #E0A94A;
+      --c-bass: #93A1AE;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .3);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0E1419;
+    --surface: #172029;
+    --surface-2: #1D2833;
+    --ink: #E4EAF0;
+    --muted: #93A1AE;
+    --line: #33414E;
+    --staff: #6F7E8C;
+    --brass: #E0A94A;
+    --brass-ink: #1A1206;
+    --brass-soft: #3A2E17;
+    --danger: #F2837A;
+    --c-root: #F07A64;
+    --c-third: #6FA8E8;
+    --c-fifth: #62C08A;
+    --c-seventh: #B48AE6;
+    --c-ext: #E0A94A;
+    --c-bass: #93A1AE;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3);
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 16px/1.45 var(--body);
+    padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+  }
+  button, input, select { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 3px solid var(--brass); outline-offset: 2px; }
+
+  .wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding-inline: 16px;
+    padding-block: 16px 24px;
+    display: grid;
+    gap: 18px;
+  }
+
+  header.top { display: grid; gap: 12px; }
+  .brand { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  h1 {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: clamp(26px, 7vw, 34px);
+    letter-spacing: -0.02em;
+    line-height: 1;
+    margin: 0;
+  }
+  h1 span { color: var(--brass); }
+  .tag { color: var(--muted); font-size: 14px; margin: 0; }
+
+  .label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--muted);
+  }
+
+  /* Segmented control */
+  .seg {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 3px;
+    gap: 3px;
+  }
+  .seg button {
+    border: 0;
+    background: transparent;
+    border-radius: 9px;
+    padding: 8px 4px;
+    min-height: 40px;
+    line-height: 1.1;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--muted);
+  }
+  .seg button small { display: block; font-weight: 400; font-size: 12px; }
+  .seg button[aria-pressed="true"] { background: var(--brass); color: var(--brass-ink); }
+  .seg button[aria-pressed="true"] small { color: inherit; opacity: .85; }
+
+  /* Chord entry */
+  form.entry { display: flex; gap: 8px; }
+  form.entry input {
+    flex: 1;
+    min-width: 0;
+    height: 48px;
+    border: 1.5px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+    padding: 0 14px;
+    font-size: 18px;
+    font-family: var(--display);
+    font-weight: 600;
+  }
+  form.entry input:focus { border-color: var(--brass); outline: none; }
+  .btn {
+    height: 48px;
+    padding: 0 18px;
+    border-radius: 12px;
+    border: 0;
+    background: var(--brass);
+    color: var(--brass-ink);
+    font-weight: 700;
+  }
+  .btn.ghost { background: transparent; border: 1.5px solid var(--line); color: var(--ink); height: 36px; padding: 0 12px; font-size: 14px; }
+  .hint { font-size: 13px; color: var(--muted); margin: 6px 2px 0; }
+  .error { color: var(--danger); font-size: 14px; margin: 6px 2px 0; }
+
+  .presets { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .presets .label { margin-right: 2px; }
+
+  /* Progression strip */
+  .strip { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    border: 1.5px solid var(--line);
+    background: var(--surface);
+    border-radius: 10px;
+    padding: 6px 10px;
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 16px;
+    min-width: 52px;
+    text-align: center;
+  }
+  .chip small { display: block; font-family: var(--body); font-weight: 400; font-size: 11px; color: var(--muted); }
+  .chip.bad { border-color: var(--danger); color: var(--danger); }
+  .chip.now { background: var(--brass); border-color: var(--brass); color: var(--brass-ink); }
+  .chip.now small { color: inherit; }
+
+  .options { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  .options > div { display: grid; gap: 6px; }
+  .toggles { display: flex; gap: 16px; flex-wrap: wrap; font-size: 15px; }
+  .toggles label { display: flex; align-items: center; gap: 8px; }
+  .toggles input { width: 20px; height: 20px; accent-color: var(--brass); }
+
+  /* Chord cards */
+  .cards { display: grid; gap: 12px; }
+  .card {
+    background: var(--surface);
+    border: 1.5px solid transparent;
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    padding: 12px 12px 8px;
+    display: grid;
+    gap: 4px;
+    scroll-margin-block: 16px 110px;
+  }
+  .card.now { border-color: var(--brass); }
+  .card-head { display: flex; align-items: center; gap: 10px; }
+  .num {
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+    color: var(--muted);
+    width: 22px;
+    text-align: center;
+    flex: none;
+  }
+  .names { flex: 1; min-width: 0; }
+  .chord-name {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 26px;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+  }
+  .chord-name sup { font-size: .62em; font-weight: 600; margin-left: 1px; }
+  .concert { font-size: 13px; color: var(--muted); }
+  .tools { display: flex; gap: 4px; flex: none; }
+  .icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+    display: grid;
+    place-items: center;
+    font-size: 16px;
+    line-height: 1;
+    color: var(--muted);
+  }
+  .icon:disabled { opacity: .35; cursor: default; }
+  .icon.del:hover { color: var(--danger); }
+  .staff { width: 100%; height: auto; display: block; }
+  .card.error-card { color: var(--danger); }
+
+  .empty {
+    border: 1.5px dashed var(--line);
+    border-radius: 16px;
+    padding: 24px 16px;
+    text-align: center;
+    color: var(--muted);
+  }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--muted); }
+  .legend i { display: inline-block; width: 11px; height: 11px; border-radius: 50%; border: 2.5px solid; margin-right: 5px; vertical-align: -1px; }
+
+  /* SVG staff colours */
+  .staff .line { stroke: var(--staff); stroke-width: 1; }
+  .staff .clef { fill: var(--ink); font-family: var(--music); }
+  .staff .head { fill: var(--surface); stroke-width: 2; }
+  .staff .letter { font-family: var(--body); font-weight: 700; fill: var(--ink); }
+  .staff .acc { font-family: var(--music); fill: var(--ink); }
+  .staff .deg { font-family: var(--body); font-size: 11px; fill: var(--muted); }
+  .staff g.root { --c: var(--c-root); }
+  .staff g.third { --c: var(--c-third); }
+  .staff g.fifth { --c: var(--c-fifth); }
+  .staff g.seventh { --c: var(--c-seventh); }
+  .staff g.ext { --c: var(--c-ext); }
+  .staff g.bass { --c: var(--c-bass); }
+  .staff g.n .head { stroke: var(--c); }
+  .staff g.n .deg { fill: var(--c); }
+  .staff g.n.on .head { fill: var(--c); }
+  .staff g.n.on .letter { fill: var(--surface); }
+
+  /* Transport bar */
+  .transport {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+    z-index: 10;
+  }
+  .transport .row { max-width: 720px; margin: 0 auto; display: flex; align-items: center; gap: 12px; }
+  .play {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 0;
+    background: var(--brass);
+    color: var(--brass-ink);
+    display: grid;
+    place-items: center;
+    flex: none;
+  }
+  .play svg { width: 24px; height: 24px; fill: currentColor; }
+  .tempo { flex: 1; min-width: 0; display: grid; gap: 2px; }
+  .tempo-top { display: flex; align-items: center; gap: 8px; }
+  .bpm { font-family: var(--display); font-weight: 800; font-size: 22px; font-variant-numeric: tabular-nums; min-width: 3ch; text-align: right; }
+  .bpm-unit { font-size: 12px; color: var(--muted); margin-right: auto; }
+  .step { width: 36px; height: 32px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface-2); font-size: 18px; line-height: 1; }
+  input[type="range"] { width: 100%; accent-color: var(--brass); margin: 0; height: 24px; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .chip, .card, .seg button { transition: background-color .15s, border-color .15s, color .15s; }
+  }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>Saxophone <span>Buddy</span></h1>
+      <p class="tag">Chords in, sax arpeggios out.</p>
+    </div>
+    <div>
+      <div class="label" id="inst-label">Your saxophone</div>
+      <div class="seg" id="instrument" role="group" aria-labelledby="inst-label"></div>
+    </div>
+  </header>
+
+  <section aria-label="Add chords">
+    <form class="entry" id="entry" autocomplete="off">
+      <input id="chord-input" type="text" inputmode="text" autocapitalize="off" autocorrect="off" spellcheck="false"
+             placeholder="Cmaj7  Dm7b5  G7#9  C/E" aria-label="Chord symbols, concert pitch">
+      <button class="btn" type="submit">Add</button>
+    </form>
+    <p class="hint">Type concert-pitch chords, one or several separated by spaces. Try Cmaj, Cmin7b5, Cmaj7#11, C/E, F7alt.</p>
+    <p class="error" id="entry-error" hidden></p>
+  </section>
+
+  <section class="presets" aria-label="Example progressions">
+    <span class="label">Load</span>
+    <button class="btn ghost" type="button" data-preset="Dm7 G7 Cmaj7 Cmaj7">ii–V–I</button>
+    <button class="btn ghost" type="button" data-preset="Dm7b5 G7b9 Cm6 Cm6">Minor ii–V–i</button>
+    <button class="btn ghost" type="button" data-preset="Cm7 F7 Bbmaj7 Ebmaj7 Am7b5 D7b9 Gm6 Gm6">Autumn Leaves A</button>
+    <button class="btn ghost" type="button" data-preset="F7 Bb7 F7 F7 Bb7 Bb7 F7 D7 Gm7 C7 F7 C7">Blues in F</button>
+    <button class="btn ghost" type="button" data-preset="C G/B Am F">Pop I–V–vi–IV</button>
+    <button class="btn ghost" type="button" id="clear">Clear</button>
+  </section>
+
+  <section aria-label="Progression" class="strip" id="strip"></section>
+
+  <section class="options" aria-label="Playback options">
+    <div>
+      <div class="label" id="beats-label">Beats per chord</div>
+      <div class="seg" id="beats" role="group" aria-labelledby="beats-label"></div>
+    </div>
+    <div>
+      <div class="label" id="mode-label">Piano plays</div>
+      <div class="seg" id="mode" role="group" aria-labelledby="mode-label"></div>
+    </div>
+    <div class="toggles">
+      <label><input type="checkbox" id="click"> Click</label>
+      <label><input type="checkbox" id="follow"> Follow</label>
+    </div>
+  </section>
+
+  <div class="legend" aria-label="Colour key">
+    <span><i style="border-color:var(--c-root)"></i>Root</span>
+    <span><i style="border-color:var(--c-third)"></i>3rd</span>
+    <span><i style="border-color:var(--c-fifth)"></i>5th</span>
+    <span><i style="border-color:var(--c-seventh)"></i>7th</span>
+    <span><i style="border-color:var(--c-ext)"></i>6, 9, 11, 13, sus</span>
+    <span><i style="border-color:var(--c-bass)"></i>Slash bass</span>
+  </div>
+
+  <section class="cards" id="cards" aria-label="Arpeggios"></section>
+</main>
+
+<div class="transport" role="region" aria-label="Transport">
+  <div class="row">
+    <button class="play" id="play" type="button" aria-label="Play"></button>
+    <div class="tempo">
+      <div class="tempo-top">
+        <span class="bpm" id="bpm-value">120</span><span class="bpm-unit">BPM</span>
+        <button class="step" type="button" id="slower" aria-label="Slower">−</button>
+        <button class="step" type="button" id="faster" aria-label="Faster">+</button>
+      </div>
+      <input type="range" id="bpm" min="40" max="240" step="1" value="120" aria-label="Tempo">
+    </div>
+  </div>
+</div>
+
+<script src="theory.js"></script>
+<script src="audio.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
